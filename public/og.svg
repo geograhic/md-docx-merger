@@ -1,0 +1,41 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1e40af"/>
+      <stop offset="0.55" stop-color="#2563eb"/>
+      <stop offset="1" stop-color="#0ea5e9"/>
+    </linearGradient>
+    <linearGradient id="mark" x1="470" y1="250" x2="640" y2="360" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1d4ed8"/>
+      <stop offset="1" stop-color="#0ea5e9"/>
+    </linearGradient>
+    <filter id="sh" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="16" stdDeviation="26" flood-color="#06225e" flood-opacity="0.38"/>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- decorative soft circles -->
+  <circle cx="1060" cy="90" r="220" fill="#ffffff" opacity="0.06"/>
+  <circle cx="120" cy="560" r="180" fill="#ffffff" opacity="0.06"/>
+
+  <!-- icon tile -->
+  <g transform="translate(150 175)">
+    <rect x="0" y="0" width="280" height="280" rx="62" fill="#ffffff" opacity="0.16"/>
+    <rect x="42" y="18" width="120" height="150" rx="16" fill="#ffffff" opacity="0.38" transform="rotate(-8 102 93)"/>
+    <g filter="url(#sh)">
+      <path d="M40 40 a16 16 0 0 1 16 -16 h74 l40 40 v128 a16 16 0 0 1 -16 16 h-98 a16 16 0 0 1 -16 -16 z" fill="#ffffff"/>
+      <path d="M130 24 l40 40 h-28 a12 12 0 0 1 -12 -12 z" fill="#dbeafe"/>
+    </g>
+    <g fill="url(#mark)" transform="translate(18 8)">
+      <path d="M42 100 h16 l15 20 15 -20 h16 v60 h-16 v-35 l-15 19 -15 -19 v35 h-16 z"/>
+      <path d="M128 100 h16 v28 h14 l-22 26 -22 -26 h14 z"/>
+    </g>
+  </g>
+
+  <!-- text -->
+  <text x="500" y="270" font-family="'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif" font-size="72" font-weight="800" fill="#ffffff">Markdown 批量转 Word</text>
+  <text x="500" y="356" font-family="'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif" font-size="52" font-weight="600" fill="#dbeafe">批量转换 · 合并 · 图片内嵌</text>
+  <text x="500" y="430" font-family="'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif" font-size="34" font-weight="400" fill="#bfdbfe">纯前端 · 数据不出本机 · apps.endril.com</text>
+</svg>
