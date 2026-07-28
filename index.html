@@ -3,10 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
-  <title>Markdown 批量转 Word / 合并（网页版）</title>
-  <meta name="description" content="纯前端、本地运行的 Markdown 批量转 Word 与合并工具，支持 Word 合并、Markdown 合并、图片内嵌，数据不出本机。" />
+  <title>Markdown 批量转 Word / 合并（网页版）| 本地运行 · 数据不出本机</title>
+  <meta name="description" content="纯前端、本地运行的 Markdown 批量转 Word 工具：支持 Markdown 转 Word、Word 文档合并、Markdown 合并、混合合并与图片内嵌，所有处理在浏览器完成，数据绝不上传，免费、无需注册。" />
+  <meta name="keywords" content="Markdown 转 Word, Markdown 合并, Word 合并, md 转 docx, 文档批量转换, 在线 Markdown 工具, 本地文档处理, 免费文档工具" />
+  <meta name="author" content="Endril" />
+  <meta name="application-name" content="Markdown 批量转 Word / 合并" />
   <meta name="theme-color" content="#2563eb" />
+  <meta name="format-detection" content="telephone=no" />
+  <meta name="robots" content="index, follow, max-image-preview:large" />
   <link rel="canonical" href="https://apps.endril.com/md-docx-merger/" />
+
+  <!-- PWA / mobile web app -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="MD 转 Word" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 
   <!-- Favicons (SVG for modern browsers, ICO + PNG for crawlers/legacy) -->
   <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
@@ -19,9 +30,10 @@
 
   <!-- Open Graph (Facebook / WeChat / general link crawlers) -->
   <meta property="og:type" content="website" />
+  <meta property="og:locale" content="zh_CN" />
   <meta property="og:site_name" content="Markdown 批量转 Word / 合并" />
   <meta property="og:title" content="Markdown 批量转 Word / 合并（网页版）" />
-  <meta property="og:description" content="纯前端、本地运行的 Markdown 批量转 Word 与合并工具，支持批量转换、合并、图片内嵌，数据不出本机。" />
+  <meta property="og:description" content="纯前端、本地运行的 Markdown 批量转 Word 与合并工具：批量转换、Word 合并、Markdown 合并、图片内嵌，数据不出本机。" />
   <meta property="og:url" content="https://apps.endril.com/md-docx-merger/" />
   <meta property="og:image" content="https://apps.endril.com/md-docx-merger/og-image.png" />
   <meta property="og:image:width" content="1200" />
@@ -32,10 +44,44 @@
   <meta name="twitter:title" content="Markdown 批量转 Word / 合并（网页版）" />
   <meta name="twitter:description" content="纯前端、本地运行的 Markdown 批量转 Word 与合并工具，数据不出本机。" />
   <meta name="twitter:image" content="https://apps.endril.com/md-docx-merger/og-image.png" />
+
+  <!-- Structured data (JSON-LD) for rich search results -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Markdown 批量转 Word / 合并（网页版）",
+    "url": "https://apps.endril.com/md-docx-merger/",
+    "description": "纯前端、本地运行的 Markdown 批量转 Word 与合并工具，支持 Markdown 转 Word、Word 文档合并、Markdown 合并、混合合并与图片内嵌，数据不出本机。",
+    "applicationCategory": "UtilitiesApplication",
+    "applicationSubCategory": "Document Converter",
+    "operatingSystem": "Any",
+    "browserRequirements": "Requires JavaScript. Works in all modern browsers (Chrome, Edge, Firefox, Safari).",
+    "inLanguage": "zh-CN",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "CNY" },
+    "author": { "@type": "Organization", "name": "Endril", "url": "https://apps.endril.com" },
+    "image": "https://apps.endril.com/md-docx-merger/og-image.png",
+    "screenshot": "https://apps.endril.com/md-docx-merger/og-image.png",
+    "featureList": [
+      "Markdown 批量转 Word (docx)",
+      "Word 文档合并",
+      "Markdown 合并",
+      "Markdown 与 Word 混合合并",
+      "图片本地内嵌",
+      "完全本地运行，数据不出本机"
+    ]
+  }
+  </script>
 </head>
 <body>
   <div id="app"></div>
-  <noscript>本工具需要启用 JavaScript 才能运行。</noscript>
+  <noscript>
+    <div style="max-width:760px;margin:48px auto;padding:0 18px;font-family:system-ui,'Microsoft YaHei','PingFang SC',sans-serif;color:#1f2937;line-height:1.75">
+      <h1 style="font-size:22px;margin:0 0 14px">Markdown 批量转 Word / 合并（网页版）</h1>
+      <p>这是一款纯前端、本地运行的文档处理工具，支持 Markdown 批量转 Word（docx）、Word 文档合并、Markdown 合并、混合合并与图片内嵌。所有转换与合并均在你的浏览器内完成，<b>文件不会上传到任何服务器</b>，免费且无需注册。</p>
+      <p>请启用 JavaScript 以使用在线转换功能。更多 Endril 产品与工具，请访问 <a href="https://apps.endril.com" style="color:#2563eb">apps.endril.com</a>。</p>
+    </div>
+  </noscript>
   <script type="module" src="./src/main.js"></script>
 </body>
 </html>

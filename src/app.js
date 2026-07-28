@@ -144,7 +144,7 @@ function skeletonHTML() {
     </div>
   </div>
 
-  <div class="footer">所有转换与合并均在你的浏览器本地完成，<b>文件不会上传到任何服务器</b>。</div>
+  <div class="footer">所有转换与合并均在你的浏览器本地完成，<b>文件不会上传到任何服务器</b>。 · 由 <a href="https://apps.endril.com" target="_blank" rel="noopener">Endril</a> 提供</div>
 
   <input type="file" id="inp-md" accept=".md,.markdown" multiple class="hidden">
   <input type="file" id="inp-folder" webkitdirectory multiple class="hidden">
