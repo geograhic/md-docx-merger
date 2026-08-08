@@ -419,7 +419,7 @@ async function run() {
   if (state.running) return;
   const files = state.files.filter((f) => f.kind === 'md' || f.kind === 'docx');
   if (!files.length) { setStatus('请先添加 Markdown 或 Word 文件', 'err'); return; }
-  if (state.mode !== 'md_merge' && !files.some((f) => f.kind === 'md')) {
+  if ((state.mode === 'convert_only' || state.mode === 'convert_merge') && !files.some((f) => f.kind === 'md')) {
     setStatus('当前模式需要至少一个 Markdown 文件', 'err'); return;
   }
 

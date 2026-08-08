@@ -48,5 +48,16 @@ if (captured) {
   check('zip 体积 > 0', buf.length > 100);
 }
 
+// ---- 第二组：mixed_merge 仅含 DOCX，验证 UI 校验已放行 ----
+state.files.length = 0;
+state.mode = 'mixed_merge';
+state.keepSingle = true;
+state.wordJoin = '空行拼接';
+const onlyDocxBytes = await mdToDocxBytes('# 纯 Word\n只有 DOCX。', { styleConfig: DEFAULT_STYLE_CONFIG });
+state.files.push({ id: 'c', name: 'only.docx', kind: 'docx', bytes: onlyDocxBytes, created: 5, modified: 6 });
+await run();
+check('mixed_merge 仅 DOCX 不失败', !app.querySelector('.msg.err'));
+check('mixed_merge 仅 DOCX 出现下载按钮', !!app.querySelector('#download-btn'));
+
 console.log(`\nUI 端到端: ${pass} 通过 / ${fail} 失败`);
 if (fail > 0) process.exit(1);

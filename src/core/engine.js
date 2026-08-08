@@ -118,10 +118,18 @@ export async function runEngine({ files, settings, images, onProgress, onStatus,
 
     // ---------- 合并（convert_merge / mixed_merge） ----------
     const mergeInputs = [];
-    if (mode === 'convert_merge' || mode === 'mixed_merge') {
+    if (mode === 'convert_merge') {
       for (const c of mdBuffers) mergeInputs.push({ name: c.name, data: c.data });
-      if (mode === 'mixed_merge') {
-        for (const d of docxItems) mergeInputs.push({ name: d.name, data: d.bytes });
+    } else if (mode === 'mixed_merge') {
+      // 混合模式按 sorted 的实际顺序（MD 与 DOCX 交错）合并，而不是把 MD 全放在前面
+      let mdIdx = 0;
+      for (const f of sorted) {
+        if (f.kind === 'md') {
+          mergeInputs.push({ name: mdBuffers[mdIdx].name, data: mdBuffers[mdIdx].data });
+          mdIdx++;
+        } else if (f.kind === 'docx') {
+          mergeInputs.push({ name: f.name, data: f.bytes });
+        }
       }
     }
     if ((mode === 'convert_merge' || mode === 'mixed_merge')) {

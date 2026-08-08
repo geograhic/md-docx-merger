@@ -169,6 +169,48 @@ async function main() {
     check('排序后首个为 笔记二', docXml.includes('第二篇文档'));
   }
 
+  // ---- 7. mixed_merge 仅含 DOCX：修复“点了没反应”的 bug ----
+  console.log('[7] mixed_merge + 仅 DOCX 文件');
+  {
+    const docxA = await mdToDocxBytes('# 文档 A\n正文 A。', { styleConfig: DEFAULT_STYLE_CONFIG });
+    const docxB = await mdToDocxBytes('# 文档 B\n正文 B。', { styleConfig: DEFAULT_STYLE_CONFIG });
+    const onlyDocx = [
+      { name: 'a.docx', kind: 'docx', bytes: docxA, created: 1, modified: 2 },
+      { name: 'b.docx', kind: 'docx', bytes: docxB, created: 3, modified: 4 },
+    ];
+    const r = await runEngine({ files: onlyDocx, settings: baseSettings({ mode: 'mixed_merge', wordJoin: '空行拼接' }), images });
+    check('无失败', !r.failed);
+    check('有合并 docx', !!r.mergedDocx);
+    const { docXml } = await loadDocx(r.mergedDocx);
+    check('合并文含“文档 A”', docXml.includes('文档 A'));
+    check('合并文含“文档 B”', docXml.includes('文档 B'));
+    check('无单个转换结果', r.converted.length === 0);
+  }
+
+  // ---- 8. mixed_merge MD/DOCX 交错：合并顺序必须与列表一致 ----
+  console.log('[8] mixed_merge + MD/DOCX 交错排序');
+  {
+    const docxA = await mdToDocxBytes('# DOCX A\nDOCX 正文 A。', { styleConfig: DEFAULT_STYLE_CONFIG });
+    const docxB = await mdToDocxBytes('# DOCX B\nDOCX 正文 B。', { styleConfig: DEFAULT_STYLE_CONFIG });
+    const mixed = [
+      { name: '01_docx.docx', kind: 'docx', bytes: docxA, created: 1, modified: 2 },
+      { name: '02_md.md', kind: 'md', text: '# MD 一\nMD 正文一。', created: 3, modified: 4 },
+      { name: '03_docx.docx', kind: 'docx', bytes: docxB, created: 5, modified: 6 },
+      { name: '04_md.md', kind: 'md', text: '# MD 二\nMD 正文二。', created: 7, modified: 8 },
+    ];
+    const r = await runEngine({ files: mixed, settings: baseSettings({ mode: 'mixed_merge', wordJoin: '直接连续拼接' }), images });
+    check('无失败', !r.failed);
+    check('有合并 docx', !!r.mergedDocx);
+    const { docXml } = await loadDocx(r.mergedDocx);
+    const iA = docXml.indexOf('DOCX A');
+    const iM1 = docXml.indexOf('MD 一');
+    const iB = docXml.indexOf('DOCX B');
+    const iM2 = docXml.indexOf('MD 二');
+    check('DOCX A 在 MD 一 之前', iA >= 0 && iA < iM1);
+    check('MD 一 在 DOCX B 之前', iM1 >= 0 && iM1 < iB);
+    check('DOCX B 在 MD 二 之前', iB >= 0 && iB < iM2);
+  }
+
   console.log(`\n结果: ${pass} 通过 / ${fail} 失败`);
   if (fail > 0) process.exit(1);
 }
