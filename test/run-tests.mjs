@@ -246,6 +246,42 @@ async function main() {
     }
   }
 
+  // ---- 10. mixed_merge 合并“真实 Word 风格”DOCX 时，[Content_Types].xml 必须保留 <Override> ----
+  // 这是防止合并后 Word 报 "unreadable content" 的回归测试。
+  console.log('[10] mixed_merge + 真实风格 DOCX（含 Override）');
+  {
+    function realStyleDocx(text) {
+      const ct = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/></Types>';
+      const rels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="word/styles.xml"/></Relationships>';
+      const doc = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:r><w:t xml:space="preserve">${text}</w:t></w:r></w:p><w:sectPr/></w:body></w:document>`;
+      const styles = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style></w:styles>';
+      const z = new JSZip();
+      z.file('[Content_Types].xml', ct);
+      z.file('_rels/.rels', rels);
+      z.file('word/document.xml', doc);
+      z.file('word/styles.xml', styles);
+      z.file('word/_rels/document.xml.rels', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"/>');
+      return z.generateAsync({ type: 'uint8array' });
+    }
+    const docxA = await realStyleDocx('真实 Word 文档 A');
+    const docxB = await realStyleDocx('真实 Word 文档 B');
+    const realDocx = [
+      { name: 'real-a.docx', kind: 'docx', bytes: docxA, created: 1, modified: 2 },
+      { name: 'real-b.docx', kind: 'docx', bytes: docxB, created: 3, modified: 4 },
+    ];
+    const r = await runEngine({ files: realDocx, settings: baseSettings({ mode: 'mixed_merge', wordJoin: '空行拼接' }), images });
+    check('无失败', !r.failed);
+    check('有合并 docx', !!r.mergedDocx);
+    if (r.mergedDocx) {
+      const { zip, docXml } = await loadDocx(r.mergedDocx);
+      check('合并文含“真实 Word 文档 A”', docXml.includes('真实 Word 文档 A'));
+      check('合并文含“真实 Word 文档 B”', docXml.includes('真实 Word 文档 B'));
+      const ctOut = await zip.file('[Content_Types].xml').async('string');
+      check('输出保留 document.xml 的 Override', ctOut.includes('PartName="/word/document.xml"'));
+      check('输出保留 styles.xml 的 Override', ctOut.includes('PartName="/word/styles.xml"'));
+    }
+  }
+
   console.log(`\n结果: ${pass} 通过 / ${fail} 失败`);
   if (fail > 0) process.exit(1);
 }

@@ -98,27 +98,41 @@ function nextRelId(rels) {
 }
 
 // ---------- ContentTypes 解析/序列化 ----------
+// 必须同时保留 <Default>（按扩展名）和 <Override>（按 PartName），
+// 否则 Word 会丢失 document.xml / styles.xml 等关键部件的类型声明，
+// 打开合并结果时报 "Word found unreadable content"。
 function parseContentTypes(ctStr) {
   const defaults = {};
-  const re = /<Default\s+([^>]*?)\/?>/gi;
+  const overrides = [];
   let m;
-  while ((m = re.exec(ctStr))) {
+  const reDefault = /<Default\s+([^>]*?)\/?>/gi;
+  while ((m = reDefault.exec(ctStr))) {
     const ext = /Extension="([^"]+)"/i.exec(m[1]);
     const ct = /ContentType="([^"]+)"/i.exec(m[1]);
     if (ext && ct) defaults[ext[1].toLowerCase()] = ct[1];
   }
-  return defaults;
+  const reOverride = /<Override\s+([^>]*?)\/?>/gi;
+  while ((m = reOverride.exec(ctStr))) {
+    const partName = /PartName="([^"]+)"/i.exec(m[1]);
+    const ct = /ContentType="([^"]+)"/i.exec(m[1]);
+    if (partName && ct) overrides.push({ partName: partName[1], contentType: ct[1] });
+  }
+  return { defaults, overrides };
 }
-function serializeContentTypes(defaults) {
-  const items = Object.entries(defaults)
+function serializeContentTypes({ defaults, overrides }) {
+  const dItems = Object.entries(defaults)
     .map(([ext, ct]) => `    <Default Extension="${escapeXml(ext)}" ContentType="${escapeXml(ct)}"/>`)
     .join('\n');
+  const oItems = overrides
+    .map((o) => `    <Override PartName="${escapeXml(o.partName)}" ContentType="${escapeXml(o.contentType)}"/>`)
+    .join('\n');
+  const items = [dItems, oItems].filter(Boolean).join('\n');
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">\n${items}\n</Types>`;
 }
 const IMG_CT = { png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', gif: 'image/gif', bmp: 'image/bmp' };
-function ensureContentType(defaults, ext) {
+function ensureContentType(contentTypes, ext) {
   const e = (ext || '').toLowerCase();
-  if (!defaults[e] && IMG_CT[e]) defaults[e] = IMG_CT[e];
+  if (!contentTypes.defaults[e] && IMG_CT[e]) contentTypes.defaults[e] = IMG_CT[e];
 }
 
 function resolveMediaPath(target) {
@@ -204,7 +218,7 @@ export async function mergeDocxBytes(buffers, opts = {}) {
   const rels = parseRels(relsStr);
   const counter = { n: nextRelId(rels) };
   const ctStr = (await base.file('[Content_Types].xml')?.async('string')) || '';
-  const contentTypes = ctStr ? parseContentTypes(ctStr) : {};
+  const contentTypes = ctStr ? parseContentTypes(ctStr) : { defaults: {}, overrides: [] };
 
   const bodyFrags = [...baseContent];
 
