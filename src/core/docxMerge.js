@@ -191,17 +191,20 @@ export async function mergeDocxBytes(buffers, opts = {}) {
   }
 
   const base = await JSZip.loadAsync(buffers[0]);
-  const baseDocXml = await base.file('word/document.xml').async('string');
+  const baseDocFile = base.file('word/document.xml');
+  if (!baseDocFile) throw new Error('Word 文档缺少 word/document.xml，无法合并');
+  const baseDocXml = await baseDocFile.async('string');
   const baseFrags = splitTopLevel(getBodyInner(baseDocXml));
   const baseSectPr = baseFrags.find(isSectPr) || '';
   const baseContent = baseFrags.filter((f) => !isSectPr(f));
 
   const merged = await JSZip.loadAsync(buffers[0]); // 以 base 为基底（自带 styles/rels/media）
-  const relsStr = await base.file('word/_rels/document.xml.rels').async('string');
+  // 部分（导出/精简）docx 可能没有 document.xml.rels 或 [Content_Types].xml，缺失时按空处理，避免整次合并崩溃
+  const relsStr = (await base.file('word/_rels/document.xml.rels')?.async('string')) || '';
   const rels = parseRels(relsStr);
   const counter = { n: nextRelId(rels) };
-  const ctStr = await base.file('[Content_Types].xml').async('string');
-  const contentTypes = parseContentTypes(ctStr);
+  const ctStr = (await base.file('[Content_Types].xml')?.async('string')) || '';
+  const contentTypes = ctStr ? parseContentTypes(ctStr) : {};
 
   const bodyFrags = [...baseContent];
 

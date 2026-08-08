@@ -211,6 +211,41 @@ async function main() {
     check('DOCX B 在 MD 二 之前', iB >= 0 && iB < iM2);
   }
 
+  // ---- 9. mixed_merge 仅含“精简/导出”DOCX（缺 word/_rels/document.xml.rels 等可选部件）----
+  // 回归：docxMerge 必须对这些缺省可选部件的 docx 容错，而不是整次合并崩溃。
+  console.log('[9] mixed_merge + 精简 DOCX（缺可选部件）容错');
+  {
+    // 用 helper 生成真正的精简 docx（只含 document.xml + 必要 [Content_Types].xml，无 rels/media）
+    function buildMinimal(text) {
+      const ct = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>';
+      const rels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>';
+      const doc = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:r><w:t xml:space="preserve">${text}</w:t></w:r></w:p><w:sectPr/></w:body></w:document>`;
+      const z = new JSZip();
+      z.file('[Content_Types].xml', ct);
+      z.file('_rels/.rels', rels);
+      z.file('word/document.xml', doc);
+      // 注意：故意不写入 word/_rels/document.xml.rels，模拟“精简/导出”docx
+      return z.generateAsync({ type: 'uint8array' });
+    }
+    const docxA = await buildMinimal('精简文档 A 内容');
+    const docxB = await buildMinimal('精简文档 B 内容');
+    const onlyDocx = [
+      { name: 'min-a.docx', kind: 'docx', bytes: docxA, created: 1, modified: 2 },
+      { name: 'min-b.docx', kind: 'docx', bytes: docxB, created: 3, modified: 4 },
+    ];
+    const r = await runEngine({ files: onlyDocx, settings: baseSettings({ mode: 'mixed_merge', wordJoin: '空行拼接' }), images });
+    check('无失败', !r.failed);
+    check('有合并 docx', !!r.mergedDocx);
+    if (r.mergedDocx) {
+      const { zip, docXml } = await loadDocx(r.mergedDocx);
+      check('合并文含“精简文档 A”', docXml.includes('精简文档 A'));
+      check('合并文含“精简文档 B”', docXml.includes('精简文档 B'));
+      // 输出必须是结构完整的 docx（至少包含 document.xml.rels 与 Content_Types）
+      check('输出含 word/_rels/document.xml.rels', !!zip.file('word/_rels/document.xml.rels'));
+      check('输出含 [Content_Types].xml', !!zip.file('[Content_Types].xml'));
+    }
+  }
+
   console.log(`\n结果: ${pass} 通过 / ${fail} 失败`);
   if (fail > 0) process.exit(1);
 }
